@@ -14,4 +14,11 @@ with col2:
     and finance background (7 more years of working experience in private equity and stock market). 
     I am actively looking for 2024 software engineer intership/co-op opportunity.
     """
-    st.write(content)
+    st.info(content)
+
+content2 = """
+Below you can find some of the Apps I have built in Python.
+Feel free to contact me :)
+"""
+
+st.write(content2)
