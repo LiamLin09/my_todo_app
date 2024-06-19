@@ -1,3 +1,5 @@
+import os
+from threading import Thread
 import cv2
 import time
 import glob
@@ -5,12 +7,21 @@ from emailing import send_email
 
 # initialize the video capture object to use the webcam
 video = cv2.VideoCapture(0)
-# allow the camera to warm up
+# allow the camera to warm up for a second
 time.sleep(1)
-
+# to store the first frame for reference
 first_frame = None
+# list to keep track of object status in the frame
 status_list = []
+# counter for image filename
 count = 1
+
+
+def clean_folder():
+    images = glob.glob('images/*.png')
+    for image in images:
+        os.remove(image)
+
 
 while True:
     status = 0
@@ -44,18 +55,25 @@ while True:
             status = 1
             cv2.imwrite(f"images/{count}.png", frame)
             count = count + 1
-            all_image = glob.glob("images/*.png")
-            index = int(len(all_image) / 2)
-            image_with_object = all_image[index]
+            all_images = glob.glob("images/*.png")
+            index = int(len(all_images) / 2)
+            image_with_object = all_images[index]
 
     # update the status list to keep the last two statuses
     status_list.append(status)
     status_list = status_list[-2:]
 
     # if an object was detected in the prev frame but not in the curr frame
-    # send a email
+    # send an email
     if status_list[0] == 1 and status_list[1] == 0:
-        send_email()
+        email_thread = Thread(target=send_email, args=(image_with_object, ))
+        email_thread.daemon = True
+        clean_thread = Thread(target=clean_folder)
+        clean_thread.daemon = True
+
+        email_thread.start()
+
+    print(status_list)
 
     # display the original frame with rectangle
     cv2.imshow("Video", frame)
@@ -65,3 +83,5 @@ while True:
         break
 
 video.release()
+
+clean_thread.start()
