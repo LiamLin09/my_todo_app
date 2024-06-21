@@ -3,7 +3,9 @@ import requests
 import selectorlib
 import smtplib
 import ssl
+import sqlite3
 
+connection = sqlite3.connect('data.db')
 
 URL = 'http://programmer100.pythonanywhere.com/tours/'
 HEADERS = {
@@ -39,23 +41,33 @@ def send_email(message):
 
 
 def store(result):
-    with open('data.txt', 'a') as file:
-        file.write(result + '\n')
+    row = result.split(",")
+    row = [item.strip() for item in row]
+    cursor = connection.cursor()
+    cursor.execute('INSERT INTO events VALUES(?,?,?)', row)
+    connection.commit()
 
 
 def read(result):
-    with open('data.txt', 'r') as file:
-        return file.read()
+    row = result.split(",")
+    row = [item.strip() for item in row]
+    band, city, date = row
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM events WHERE band=? AND city=? AND date=?', (band, city, date))
+    rows = cursor.fetchall()
+    print(rows)
+    return rows
 
 
 if __name__ == '__main__':
     while True:
-        result = extract(scrape(URL))
+        scrapped = scrape(URL)
+        result = extract(scrapped)
         print(result)
 
-        content = read(result)
         if result != 'No upcoming tours':
-            if result not in content:
+            row = read(result)
+            if not row:
                 store(result)
                 send_email(message='Hey, Ryan is super BAD!!')
         time.sleep(3)
