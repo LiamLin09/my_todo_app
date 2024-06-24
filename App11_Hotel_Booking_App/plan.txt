@@ -1,0 +1,8 @@
+1. user can see a list of hotel
+2. user can book a hotel
+3. user can get a reservation confirmation
+
+Class:
+User;
+Hotel;
+Reservation_confirmation;
