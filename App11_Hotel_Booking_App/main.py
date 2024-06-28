@@ -18,7 +18,7 @@ class Hotel:
     def available(self):
         """check if the hotel is available"""
         availability = df.loc[df['id'] == self.hotel_id, 'available'].squeeze()
-        if availability:
+        if availability == 'yes':
             return True
         else:
             return False
